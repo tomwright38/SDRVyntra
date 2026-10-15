@@ -1,53 +1,49 @@
-# Vyntra Account Desk
+# Vyntra Account Desk — free manual edition
 
-A single-user research and call-preparation workspace for bank SDR conversations. Node.js 24+, built-in SQLite, and a lightweight browser interface. No runtime npm dependencies.
+A personal bank research and call-preparation workspace. **No subscriptions, search keys or AI keys are needed.** The HTTP app makes no search or model calls, even if keys exist in its environment. It organises facts you paste and uses fixed templates; it does not automatically research or verify banks.
 
-## Run
+## Using it
+
+1. Enter the bank, geography, offering and target persona.
+2. Find a public bank publication, annual report, regulatory announcement or news article yourself. Click **Add source** and paste its title, link and short factual excerpt. Add a publication date only if known. Choose **Background** for an account overview or **Development** for a possible conversation topic. Up to eight sources are retained; up to five developments appear in the brief.
+3. Click **Build my brief**. Review the source material, possible relevance, questions, opener and outreach. Everything pasted is labelled user-supplied and unverified. No named contact is represented as verified. An initiative is never treated as proof of a problem.
+4. Save notes, search saved accounts, copy text or export Markdown. Select a saved account to edit its source cards, then **Rebuild brief**. The rebuild uses the original account details and edited sources/notes; submit the main form to create a separate account with changed bank/persona details.
+5. Use **Vyntra knowledge** as your approved reference material. Free-mode templates do not automatically insert capability, integration, differentiator or customer-result claims. Personalise drafts yourself using only approved information.
+
+With no sources supplied, the app produces a generic discovery plan and explicitly states that no account facts or reason to engage have been established. Old fictional demo briefs remain marked as fictional. The former optional live-provider module remains in the source for future extension and contract tests, but is not connected to the server workflow.
+
+## Keep your work safe on free Render hosting
+
+Render's free filesystem can be reset during restarts and deployments. **Click Download backup after each working session**, and before an update. It downloads all saved accounts, notes, source material and knowledge settings as a private JSON file. Keep this file on your computer; it contains your research and notes, but no server login or API credentials.
+
+If saved data disappears, click **Restore backup** and select that file. Restore adds missing accounts, keeps existing accounts unchanged, and replaces approved knowledge with the backed-up version. A confirmation explains this before upload. Invalid backups change nothing. Maximum backup size is 5 MB; maximum 1,000 accounts per restore. Markdown exports are readable briefs, not restorable backups.
+
+The database survives normal application restarts on persistent local storage. Render free hosting does **not** guarantee that filesystem survival. Local running is an alternative if you want durable storage without a paid hosting disk.
+
+## Run locally
+
+Requires Node.js 24 (pinned in `.node-version`). No npm runtime dependencies.
 
 ```sh
-cd /workspace/SDRVyntra
 npm ci
 cp .env.example .env
 npm start
 ```
 
-Open port 3000 in your development environment. `npm run dev` restarts the server on code changes. `npm test` runs integration and provider-contract tests using isolated temporary databases.
+The server listens on port 3000 by default. `npm run dev` watches for source changes. `npm test` runs isolated integration tests for persistence, templates, citations, backup/restore, login protection and provider failure contracts. No paid provider calls occur during tests.
 
-The app works immediately in **fictional demo mode**. Demo output always describes the invented Meridian Example Bank, regardless of the account entered; it is never presented as research about a real bank.
+SQLite lives at `data/vyntra.sqlite`; override with `DATABASE_PATH`. Preserve this directory. Use the in-app backup for portable exports, or SQLite backup tools for database backups. Do not copy an active SQLite database without its required WAL state.
 
-## Enable live research
+## Render
 
-Set both `TAVILY_API_KEY` (Tavily Search API) and `OPENAI_API_KEY` (OpenAI API with access to the configured model) in the server environment or local `.env`, then restart the server. `OPENAI_MODEL` defaults to `gpt-4.1-mini`. Credentials stay on the server; `.env` is ignored by Git. Do not paste keys into knowledge settings or notes. Allow outbound HTTPS to `api.tavily.com` and `api.openai.com`.
+Choose **Node**, leave Root Directory empty, build with `npm ci`, start with `npm start`. The repository pins Node 24.19.0. Set a private `APP_USERNAME` and long unique `APP_PASSWORD` under Environment. Render/production refuses access until both are set. Your browser asks for the shared login. There are no separate users or automatic sending features. Browsers can remember the login until closed; there is no explicit logout button. Use HTTPS and keep the service access-controlled.
 
-The status badge reports whether credentials are configured, not whether their account has usable quota. A provider error shows an explicit error and preserves the existing saved brief. Missing either key deliberately selects demo mode; invalid configured keys never silently fall back to demo.
+Keep the **Free** compute plan to avoid hosting charges; it can sleep after inactivity and does not provide a persistent disk. Use downloadable backups as above. Do not add OpenAI or Tavily keys for this edition: they are unused.
 
-Before using research for outreach, populate **Vyntra knowledge** with internally approved product information, differentiators, examples, qualification criteria and prohibited claims. Initial content contains only the broad offering supplied; missing product details are marked. Saved knowledge affects new research and refreshes, not old briefs.
+## Research and privacy limitations
 
-## Daily workflow
+Pasted excerpts, dates, links and personal notes are untrusted data. They are displayed as text, never executed or used as instructions. URLs are validated but not fetched. You are responsible for selecting authoritative sources and checking that excerpts, dates, account identity and relevance are correct. Call and outreach use general templates based on the first supplied development's title and selected offering, not semantic understanding of the full source material. No product fit or urgency is verified. Review and personalise before contacting anyone.
 
-Enter bank, geography, offering and persona, optionally website, contact and notes. Research saves the account and brief automatically. Use saved-account search, save editable notes, refresh the selected account, copy opener/email/LinkedIn drafts, or download a complete Markdown brief with citations, source excerpts, timestamps, limitations and notes. A new submission creates a separate account; Refresh updates the selected account. Source labels jump to the source library; expand a source to inspect its excerpt and original link.
+All research is processed on your app server and saved in its SQLite database. Backup files contain notes and approved knowledge, so keep them private. API keys and passwords are never included by the backup endpoint. Avoid pasting credentials into notes or source fields.
 
-## Storage and deployment
-
-SQLite lives at `data/vyntra.sqlite` by default (`DATABASE_PATH` overrides it). Accounts, notes and approved knowledge survive restarts. Preserve the data directory on a persistent volume. For a consistent backup use SQLite's backup tooling or stop the app before copying the database and its WAL files. Keep account notes and generated briefs confidential.
-
-This version has a single shared login using browser HTTP Basic authentication, with no separate user accounts, CRM or sending integration. Set APP_USERNAME and APP_PASSWORD privately. Render/production refuses access until both are set. Use a long unique password. Browsers may remember it until closed; there is no separate logout button. It binds to `0.0.0.0` for development environments. Use only in a private, access-controlled workspace; set the shared login before exposing it to the public internet. TLS and access control belong at the hosting proxy. Live research sends account inputs, pasted notes and approved knowledge to the model provider, and bank/persona queries to the search provider: use information permitted by your organisation's policy.
-
-## Research boundaries
-
-- Three live searches cover account background, relevant initiatives, and the requested person/function. Official material is prioritised through synthesis instructions. Coverage is not exhaustive.
-- Evidence consists of **search-provider excerpts**, not independently fetched or fully verified pages. Source URLs and excerpts come from search results, never from model-invented URLs. Publication dates can be unknown; older background is labelled separately.
-- The model must cite evidence for factual sections, ground call/outreach statements in those sections, distinguish hypotheses, avoid invented urgency and verify named roles. Programmatic validation rejects missing/unknown citations in factual sections, malformed responses and oversized outreach. It cannot prove semantic entailment, source freshness or a person's current employment. Review original sources before using claims. Call and outreach include section-level citations for their account-specific statements.
-- Retrieved content and pasted context are delimited as untrusted data in model instructions; the model has no tools, credentials, database access or sending capabilities. Prompt injection and factual errors cannot be eliminated by instructions alone.
-- Weak evidence should produce explicit limitations and no invented developments. No usable sources is an error. Live provider behaviour has contract tests with mock responses; real end-to-end live output requires valid credentials and quota.
-- Single process, small personal workload; no background jobs. Search calls have a 60-second timeout and synthesis a separate 60-second timeout. Keep the page open while research runs. Copy requires browser clipboard support/secure context; manual text selection remains available.
-
-## Structure
-
-`src/storage.js`: SQLite persistence and knowledge defaults. `src/research.js`: provider calls, evidence and validation. `src/demo.js`: fictional fixtures. `src/export.js`: Markdown export. `src/server.js`: HTTP API/static serving. `public/`: responsive interface. `test/`: integration tests including persistence and failure handling.
-
-## Render setup
-
-Connect this GitHub repository and choose Node. Leave Root Directory empty. Build command: `npm ci`; start command: `npm start`. Set `NODE_VERSION` to `24.19.0`. Under Environment, privately add `APP_USERNAME` and a long unique `APP_PASSWORD`. No app data is accessible on Render until these are configured; the browser asks you to sign in. Do not share credentials in chat. API keys are optional for the fictional demo.
-
-Render free services have ephemeral storage: saved accounts may disappear on restart or deployment. For daily use, choose a plan supporting a persistent disk, mount it at `/var/data`, and set `DATABASE_PATH=/var/data/vyntra.sqlite`. Confirm Render’s displayed costs before buying. Use one service instance with this SQLite setup. The app has no separate public health endpoint: an unauthenticated request intentionally receives 401 once login is configured.
+`src/manual.js` builds free templates; `storage.js` handles SQLite; `export.js` handles Markdown; `auth.js` handles the shared login; `server.js` serves the UI and API; `public/` contains the interface.

@@ -10,7 +10,7 @@ import {research,ResearchError,validateBrief} from '../src/research.js';
 const input={bank:'Example Bank',geography:'United Kingdom',offering:'Both',persona:'COO',notes:'Initial note'};
 async function fixture(fn,researcher){const dir=mkdtempSync(join(tmpdir(),'vyntra-'));const path=join(dir,'test.sqlite');const store=createStore(path);const app=createApp({store,researcher:researcher||((i)=>research(i,defaultKnowledge,{env:{}})),env:{}});await new Promise(r=>app.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${app.address().port}`;const req=async(p,method='GET',value)=>{const r=await fetch(base+p,{method,headers:{'Content-Type':'application/json'},body:value?JSON.stringify(value):undefined});return {status:r.status,data:r.headers.get('content-type')?.includes('json')?await r.json():await r.text()};};try{await fn(req,store,path);}finally{await new Promise(r=>app.close(r));store.close();rmSync(dir,{recursive:true,force:true});}}
 test('complete demo workflow, notes, knowledge, export and restart persistence',async()=>fixture(async(req,store,path)=>{
- assert.equal((await req('/api/status')).data.mode,'demo');assert.equal((await req('/api/accounts')).data.length,0);
+ assert.equal((await req('/api/status')).data.mode,'manual');assert.equal((await req('/api/accounts')).data.length,0);
  const r=await req('/api/research','POST',input);assert.equal(r.status,200);const a=r.data;assert.equal(a.brief.mode,'demo');assert.match(a.brief.overview.text,/fictional/);assert.equal(a.input.bank,input.bank);
  assert.equal((await req('/api/accounts')).data[0].id,a.id);
  await req(`/api/accounts/${a.id}`,'PATCH',{notes:'Updated note <script>alert(1)</script>'});

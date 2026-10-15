@@ -21,6 +21,15 @@ export function createStore(path) {
     notes(id,notes) { db.prepare('UPDATE accounts SET notes=?,updated=? WHERE id=?').run(notes,new Date().toISOString(),id); return this.get(id); },
     knowledge:()=>JSON.parse(db.prepare('SELECT value FROM settings WHERE id=1').get().value),
     setKnowledge(value) { db.prepare('UPDATE settings SET value=? WHERE id=1').run(JSON.stringify(value)); },
+    restore(backup) {
+      db.exec('BEGIN IMMEDIATE');let added=0;
+      try{
+        const insert=db.prepare('INSERT OR IGNORE INTO accounts VALUES(?,?,?,?,?,?)');
+        for(const a of backup.accounts)added+=Number(insert.run(a.id,JSON.stringify(a.input),JSON.stringify(a.brief),a.notes,a.created,a.updated).changes);
+        const knowledge=Object.fromEntries(Object.keys(defaultKnowledge).map(k=>[k,backup.knowledge[k]]));
+        db.prepare('UPDATE settings SET value=? WHERE id=1').run(JSON.stringify(knowledge));db.exec('COMMIT');return added;
+      }catch(e){db.exec('ROLLBACK');throw e;}
+    },
     close:()=>db.close()
   };
 }
